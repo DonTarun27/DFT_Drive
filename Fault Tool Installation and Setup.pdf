@@ -1,0 +1,55 @@
+INSTALLATION:-
+In order to use Fault, you have three options:
+1) Using the Docker Image (Windows, macOS, Linux)
+2) Using Nix (macOS, Linux)
+3) Bring-your-own-dependencies (macOS, Linux)
+
+USING THE DOCKER IMAGE:-
+Docker is software working at the OS level that allows small environments called “containers” to be run at-will.
+It works on Windows, macOS and Linux, where for the first two, a Linux virtual machine is used.
+For instructions on how to install Docker, check Docker’s website.
+Getting the Fault Docker image:-
+1) After installing Docker, run the following command in your terminal of choice: (I am using WSL - Ubuntu 24.04.1 LTS)
+docker pull ghcr.io/aucohl/fault:latest
+2) You can then run Fault commands using that image. For example, to run fault --version:
+docker run -ti --rm ghcr.io/aucohl/fault:latest fault --version
+3) This should print something like "Fault 0.7.0. ©The American University in Cairo 2019-2022. All rights reserved.
+Using Python 3.6.6 and Pyverilog 1.3.0."
+If you see that, you have successfully set the Fault environment up on your machine.
+4) To use the current folder inside the Docker container, you need to add these options to the command:
+-v </path/to/folder>:</path/to/folder> -w </path/to/folder>
+Obviously, replacing </path/to/folder> with your current path. For example, if your current folder is /Users/me/Code, your options would be -v /Users/me/Code:/Users/me/Code -w /Users/me/Code.
+[!TIP] You can add as many -vs as you want to mount multiple directories.
+5) This makes the final command:
+docker run -ti -v </path/to/folder>:</path/to/folder> -w </path/to/folder> --rm ghcr.io/aucohl/fault:latest fault --version
+
+STEPS TO RUN DOCKER WITHOUT USING SUDO:-
+1) Create the Docker Group: During the installation of Docker, a group named docker is usually created. You can check if it exists by running:
+sudo groupadd docker
+If the group already exists, you will see an error message, which you can ignore.
+2) Add Your User to the Docker Group: Use the following command to add your user to the docker group. Replace $USER with your username if necessary:
+sudo usermod -aG docker $USER
+This command appends your user to the docker group, granting permission to communicate with the Docker daemon.
+3) Log Out and Log Back In: For the changes to take effect, you need to log out of your session and log back in. This refreshes your group memberships.
+4) Verify Docker Access: After logging back in, you can test if you can run Docker commands without sudo by executing:
+docker run hello-world
+If the command runs successfully and you see a confirmation message, you have configured Docker correctly.
+
+DOCKER SETUP:-
+1) Enter command:
+vi ~/.bashrc
+Insert the below line at the end:
+alias fault='docker run -u 1000:1000 -ti -v /home/tarukuma/Documents/Fault:/home/tarukuma/Documents/Fault -w /home/tarukuma/Documents/Fault --rm ghcr.io/aucohl/fault:latest fault'
+2) Log Out and Log Back In or Enter command:
+source ~/.bashrc
+Now you can use fault as a command instead of typing the long command everytime.
+3) Check whether the below command prints the version:
+fault --version or fault -V
+4) If the Docker is not running, enter below commands:
+sudo systemctl stop docker
+sudo rm /var/lib/docker/volumes/metadata.db
+sudo systemctl start docker
+sudo systemctl status docker
+5) If it's still not running or is inactive, enter below commands:
+ps axf | grep docker | grep -v grep | awk '{print "kill -9" $1}' | sudo sh
+sudo systemctl start docker
