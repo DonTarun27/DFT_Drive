@@ -1,0 +1,9 @@
+fault synth -t s27 -l Tech/osu035/osu035_stdcells.lib -o Netlists/s27.nl.v Benchmarks/ISCAS_89/s27.v
+
+fault cut -o Netlists/s27.cut.v -s Tech/osu035/config.yml Netlists/s27.nl.v
+
+fault -c Tech/osu035/osu035_stdcells.v -v 100 -r 50 -m 95 --ceiling 1000 Netlists/s27.cut.v --clock CK
+
+fault chain --clock CK --reset reset -l Tech/osu035/osu035_stdcells.lib -c Tech/osu035/osu035_stdcells.v Netlists/s27.nl.v
+
+fault tap --clock CK --reset reset -l Tech/osu035/osu035_stdcells.lib -c Tech/osu035/osu035_stdcells.v Netlists/s27.nl.v.chained.v
