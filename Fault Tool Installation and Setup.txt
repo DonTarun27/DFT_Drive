@@ -10,18 +10,17 @@ It works on Windows, macOS and Linux, where for the first two, a Linux virtual m
 For instructions on how to install Docker, check Docker’s website.
 Getting the Fault Docker image:-
 1) After installing Docker, run the following command in your terminal of choice: (I am using WSL - Ubuntu 24.04.1 LTS)
-   docker pull ghcr.io/aucohl/fault:latest
+   docker pull ghcr.io/aucohl/fault:0.9.4
 2) You can then run Fault commands using that image. For example, to run fault --version:
-   docker run -ti --rm ghcr.io/aucohl/fault:latest fault --version
-3) This should print something like "Fault 0.7.0. ©The American University in Cairo 2019-2022. All rights reserved.
-   Using Python 3.6.6 and Pyverilog 1.3.0."
+   docker run -ti --rm ghcr.io/aucohl/fault:0.9.4 fault --version
+3) It should print the version name as 0.9.4
    If you see that, you have successfully set the Fault environment up on your machine.
 4) To use the current directory inside the Docker container, you need to add these options to the command:
    -v </path/to/directory>:</path/to/directory> -w </path/to/directory>
    Obviously, you should replace </path/to/directory> with your current directory.
    [!TIP] You can add as many -v's as you want to mount multiple directories.
 5) This makes the final command:
-   docker run -ti -v </path/to/directory>:</path/to/directory> -w </path/to/directory> --rm ghcr.io/aucohl/fault:latest fault --version
+   docker run -ti -v </path/to/directory>:</path/to/directory> -w </path/to/directory> --rm ghcr.io/aucohl/fault:0.9.4 fault --version
 
 STEPS TO RUN DOCKER WITHOUT USING SUDO:-
 1) Create the Docker Group: During the installation of Docker, a group named docker is usually created. You can check if it exists by running:
@@ -37,19 +36,18 @@ STEPS TO RUN DOCKER WITHOUT USING SUDO:-
 
 DOCKER SETUP IN FAULT TOOL WORKING DIRECTORY:-
 1) Change your path to a directory you prefer in your user home directory (~) like I changed it to ~/Documents
-2) Clone the Fault Tool GitHub Directory which contain tech files & examples to your current directory with the below command:
+2) Clone the Fault Tool GitHub repository which contains tech files & examples to your current directory with the below command:
    git clone https://github.com/AUCOHL/Fault
    So that it creates a directory named Fault in your current directory like in my case it is ~/Documents/Fault
 3) Now, to setup & use the current directory inside the Docker container, enter the below command:
    vi ~/.bashrc
    Insert the below line at the end of the file:
-   alias fault='docker run -u 1000:1000 -ti -v /home/$USER/Documents/Fault:/home/$USER/Documents/Fault -w /home/$USER/Documents/Fault --rm ghcr.io/aucohl/fault:latest fault'
+   alias fault='docker run -u 1000:1000 -ti -v /home/$USER/Documents/Fault:/home/$USER/Documents/Fault -w /home/$USER/Documents/Fault --rm ghcr.io/aucohl/fault:0.9.4 fault'
 4) Log Out & Log Back In or Enter the below command in the current terminal:
    source ~/.bashrc
    Now you can use 'fault' as a command instead of typing the lengthy docker command every time.
-5) Check whether the below command prints the version name something like "Fault 0.7.0. ©The American University in Cairo 2019-2022. All rights reserved.
-   Using Python 3.6.6 and Pyverilog 1.3.0.":
-   fault --version or fault -V
+5) Check whether the below command prints the version name as 0.9.4
+   fault --version
 6) If the Docker is not running or inactive, enter the below commands:
    sudo systemctl stop docker
    sudo rm /var/lib/docker/volumes/metadata.db
@@ -60,4 +58,4 @@ DOCKER SETUP IN FAULT TOOL WORKING DIRECTORY:-
    sudo systemctl start docker
    sudo systemctl status docker
 
-NOTE:- I filtered and simplified the steps given in this original Fault Open Source Tool website - https://fault.readthedocs.io/en/latest/installation.html
+NOTE:- I filtered and simplified the steps given in this original Fault Open Source Tool website - https://fault.readthedocs.io/en/latest/installation.html and pulled the latest version from the GitHub repository - https://github.com/aucohl/Fault/pkgs/container/fault
