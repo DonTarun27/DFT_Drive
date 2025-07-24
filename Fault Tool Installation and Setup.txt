@@ -7,9 +7,9 @@ In order to use Fault, you have three options:
 USING THE DOCKER IMAGE:-
 Docker is software working at the OS level that allows small environments called “containers” to be run at-will.
 It works on Windows, macOS and Linux, where for the first two, a Linux virtual machine is used.
-For instructions on how to install Docker, check Docker’s website.
+For instructions on how to install Docker, check Docker’s website - https://docs.docker.com/engine/install/
 Getting the Fault Docker image:-
-1) After installing Docker, run the following command in your terminal of choice: (I am using WSL - Ubuntu 24.04.1 LTS)
+1) After installing Docker, run the following command in your terminal of choice (I am using WSL - Ubuntu 24.04.2 LTS):
    docker pull ghcr.io/aucohl/fault:0.9.4
 2) You can then run Fault commands using that image. For example, to run fault --version:
    docker run -ti --rm ghcr.io/aucohl/fault:0.9.4 fault --version
