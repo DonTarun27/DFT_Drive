@@ -1,0 +1,86 @@
+# INSTALLATION
+In order to use Fault, you have three options
+1) Using the Docker Image (Windows, macOS, Linux & WSL)
+2) Using Nix (macOS, Linux)
+3) Bring-your-own-dependencies (macOS, Linux)
+## 1) Using the Docker Image
+Docker is software working at the OS level that allows small environments called “containers” to be run at-will.
+It works on Windows, macOS, Linux and WSL (Windows Subsystem for Linux), where for the first two, a Linux virtual machine is used.
+For instructions on how to install Docker, check Docker’s website - https://docs.docker.com/engine/install/
+### Getting the Fault Docker image
+1) After installing Docker, run the following command in your terminal of choice (I am using __WSL - Ubuntu 24.04.2 LTS__)
+```
+docker pull ghcr.io/aucohl/fault:0.9.4
+```
+2) You can then run Fault commands using that image. For example, to run fault --version
+```
+docker run -ti --rm ghcr.io/aucohl/fault:0.9.4 fault --version
+```
+3) It should print the version name as __0.9.4__, if you see that, you have successfully set the Fault environment up on your machine.
+4) To use the current directory inside the Docker container, you need to add these options to the command -v </path/to/directory>:</path/to/directory> -w </path/to/directory>. Obviously, you should replace </path/to/directory> with your current directory.
+
+__[!TIP]__ You can add as many -v's as you want to mount multiple directories.
+
+5) This makes the final command
+```
+docker run -ti -v </path/to/directory>:</path/to/directory> -w </path/to/directory> --rm ghcr.io/aucohl/fault:0.9.4 fault --version
+```
+# STEPS TO RUN DOCKER WITHOUT USING SUDO
+1) Create the Docker Group: During the installation of Docker, a group named docker is usually created. You can check if it exists by running
+```
+sudo groupadd docker
+```
+If the group already exists, you will see an error message, which you can ignore.
+
+2) Add Your User to the Docker Group: Use the following command to add your user to the docker group. Replace $USER with your username if necessary
+```
+sudo usermod -aG docker $USER
+```
+This command appends your user to the docker group, granting permission to communicate with the Docker daemon.
+
+3) Log Out and Log Back In: For the changes to take effect, you need to log out of your session and log back in. This refreshes your group memberships.
+4) Verify Docker Access: After logging back in, you can test if you can run Docker commands without sudo by executing
+```
+docker run hello-world
+```
+If the command runs successfully and you see a confirmation message, you have configured Docker correctly.
+# DOCKER SETUP IN FAULT TOOL WORKING DIRECTORY
+1) Change your path to a directory you prefer in your user home directory (~) like I changed it to __~/Documents__
+2) Clone the Fault Tool GitHub repository which contains tech files & examples to your current directory with the below command
+```
+git clone https://github.com/AUCOHL/Fault
+```
+So that it creates a directory named Fault in your current directory like in my case it is __~/Documents/Fault__
+
+3) Now, to setup & use the current directory inside the Docker container, enter the below command
+```
+vi ~/.bashrc
+```
+Insert the below line at the end of the file
+```
+alias fault='docker run -u 1000:1000 -ti -v /home/$USER/Documents/Fault:/home/$USER/Documents/Fault -w /home/$USER/Documents/Fault --rm ghcr.io/aucohl/fault:0.9.4 fault'
+```
+4) Log Out & Log Back In or Enter the below command in the current terminal
+```
+source ~/.bashrc
+```
+Now you can use __fault__ as a command instead of typing the lengthy docker command every time.
+
+5) Check whether the below command prints the version name as __0.9.4__
+```
+fault --version
+```
+6) If the Docker is not running or inactive, enter the below commands
+```
+sudo systemctl stop docker
+sudo rm /var/lib/docker/volumes/metadata.db
+sudo systemctl start docker
+sudo systemctl status docker
+```
+7) If it's still not running or being inactive, enter the below commands
+```
+ps axf | grep docker | grep -v grep | awk '{print "kill -9" $1}' | sudo sh
+sudo systemctl start docker
+sudo systemctl status docker
+```
+__NOTE:__ I filtered and simplified the steps given in this original Fault Open Source Tool website - https://fault.readthedocs.io/en/latest/installation.html and pulled the latest version from the GitHub repository - https://github.com/aucohl/Fault/pkgs/container/fault
