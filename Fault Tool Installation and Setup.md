@@ -1,4 +1,4 @@
-# INSTALLATION
+# Installation
 In order to use Fault, you have three options
 1) Using the Docker Image (Windows, macOS, Linux & WSL)
 2) Using Nix (macOS, Linux)
@@ -25,7 +25,7 @@ __[!TIP]__ You can add as many -v's as you want to mount multiple directories.
 ```
 docker run -ti -v </path/to/directory>:</path/to/directory> -w </path/to/directory> --rm ghcr.io/aucohl/fault:0.9.4 fault --version
 ```
-# STEPS TO RUN DOCKER WITHOUT USING SUDO
+# Steps to run Docker without using sudo
 1) Create the Docker Group: During the installation of Docker, a group named docker is usually created. You can check if it exists by running
 ```
 sudo groupadd docker
@@ -44,7 +44,7 @@ This command appends your user to the docker group, granting permission to commu
 docker run hello-world
 ```
 If the command runs successfully and you see a confirmation message, you have configured Docker correctly.
-# DOCKER SETUP IN FAULT TOOL WORKING DIRECTORY
+# Docker Container Setup of Fault Tool Working Directory
 1) Change your path to a directory you prefer in your user home directory (~) like I changed it to __~/Documents__
 2) Clone the Fault Tool GitHub repository which contains tech files & examples to your current directory with the below command
 ```
