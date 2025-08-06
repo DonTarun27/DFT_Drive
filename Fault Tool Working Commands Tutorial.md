@@ -2,31 +2,29 @@
 In this tutorial, I have done a typical flow of an RTL design starting from synthesis all the way to fault simulations and chain insertion.  
 We will use the s27 design which could be found in Benchmarks/ISCAS_89/s27.v
 
-**Assumptions:** We assume you’ve cloned the Fault Tool GitHub repository and you are using it as your current working directory, like in my case it is ~/Documents/Fault
+**Assumptions:** I assume you’ve cloned the Fault Tool GitHub repository and you are using it as your current working directory, like in my case it is **~/Documents/Fault**  
 If you’re using Nix without installing to PATH, replace fault with nix run .#fault --
 ## Synthesis
 The first step is to generate a synthesized netlist for the s27 module and we will use the synth command with the following options:  
-fault synth -l <liberty-file> -t <top-module-name> [-o <output-netlist-path>]. <RTL-design-path>  
--l: specifies the path to the liberty file of the standard cell library to which the RTL design is to be mapped to.  
--t: specifies the top module of the design.  
--o: specifies the path of the output netlist.  
-In this example, we will use the default path which is Netlists/ + <top-module-name> + .nl.v
+`fault synth [-l <liberty-file-path>] [-t <top-module-name>] [-o <output-netlist-file-path>] <RTL-design-file-path>`  
+-l: Specifies the path to the liberty file of the standard cell library to which the RTL design is to be mapped to.  
+-t: Specifies the top module of the design.  
+-o: Specifies the path of the output netlist. In this example, use the default path which is Netlists/&lt;top-module-name&gt;.nl.v
 
 To generate the synthesized netlist, run
 ```
 fault synth\
-  -t s27\
-  -l Tech/osu035/osu035_stdcells.lib\
-  -o Netlists/s27.nl.v\
-  Benchmarks/ISCAS_89/s27.v
+    -l Tech/osu035/osu035_stdcells.lib\
+    -t s27\
+    -o Netlists/s27.nl.v\
+    Benchmarks/ISCAS_89/s27.v
 ```
-This will run a yosys-based synthesis script and it will generate a flattened netlist at Netlists/s27.nl.v
+This will run a yosys-based synthesis script and it will generate a flattened netlist at **Netlists/s27.nl.v**
 
 **Note:** For combinational circuits, add dummy clock and reset ports to the design. The clock port doesn’t have to be connected to anything, necessarily, but will be used by Fault DFT later for the generated scan-chain.
 ## Netlist Cutting
 Since the s27 module contains sequential elements, performing netlist cutting is necessary for the fault simulations. (This step is not required for purely combinational designs.)  
-fault cut [-o <output-cut-netlist-path>] [-s <scl configuration file>] <flattened-netlist-path> <bypass options>
-
+`fault cut [-s <scl-configuration-file-path>] [-o <output-cut-netlist-file-path>] <flattened-netlist-file-path> <bypass-options>`  
 **Note:** Bypass options are shared across multiple steps. They list signals that are to be bypassed by the scan-chain insertion process. This includes but is not limited to Clocks, Resets, VDD & GND.  
 The flags are as follows:  
 --clock: The name of the clock signal.  
@@ -37,27 +35,27 @@ The flags are as follows:
 To generate the cut netlist, run
 ```
 fault cut\
-  -o Netlists/s27.cut.v\
-  -s Tech/osu035/config.yml\
-  Netlists/s27.nl.v\
-  --clock CK --reset reset --bypassing VDD=1 --bypassing GND=0
+    -s Tech/osu035/config.yml\
+    -o Netlists/s27.cut.v\
+    Netlists/s27.nl.v\
+    --clock CK --reset reset --bypassing VDD=1 --bypassing GND=0
 ```
 This will remove all the netlist flip flops converting it into a pure combinational netlist. The removed flip-flops will be exposed as input and output ports.  
-The generated comb-only (only combinational logic) netlist default path is: Netlists/s27.cut.v  
+The generated comb-only (only combinational logic) netlist default path is **Netlists/s27.cut.v**  
 The comb-only netlist is then used for performing fault simulations in the next step.
-## Fault Simu;lations
+## Fault Simulations
 Test vectors are generated internally by a Pseudo Random Number Generator (PRNG) or by using Quaigh or Atalanta
 ### A) Using Internal PRNG
-The test vectors could be simulated incrementally such that the size of the set is increased if sufficient coverage isn’t met. This is done by the following options:  
-fault [-v <initial TV count>] [-r <increment>] [-m <minCoverage>] [--ceiling <TV count ceiling>] [-c <cell models>] <netlist> <bypass options>  
+The test vectors (TV) could be simulated incrementally such that the size of the set is increased if sufficient coverage isn’t met. This is done by the following options:  
+`fault [-v <initial-TV-count>] [-r <increment>] [-m <minCoverage>] [--ceiling <TV-count-ceiling>] [-c <cell-models-file-path>] <cut-netlist-file-path> <bypass-options>`  
 -v: Number of the initially generated test vectors.  
--m: Minimum coverage percentage that should be met by the generated test vectors.  
 -r: Increment in the test vector count if minimum coverage isn’t met.  
+-m: Minimum coverage percentage that should be met by the generated test vectors.  
 --ceiling: Ceiling for the number of generated test vectors. If this number is reached, simulations are stopped regardless of the coverage.  
--g: Type of the test vector generator. Three types are supported: (1) swift: uses Swift system RNG (2) LFSR: uses a linear feedback shift register as a RNG (3) atalanta: uses atalanta atpg for generating TVs. Default value is swift.  
+-g: Type of the test vector generator. Three types are supported: (1) swift: uses Swift system RNG (2) LFSR: uses a linear feedback shift register as a RNG (3) atalanta: uses atalanta atpg for generating TV. Default value is swift.  
 -c: The cell models to use for simulations.
 
-In this example, we will use a minimum coverage of 95%, an increment of 50, an initial test vector set size of 100 , and a ceiling of 1000 test vectors. We will also use the default value for -g option where swift’s system generator will be used for pseudo-random number generation.  
+In this example, we will use a minimum coverage of 95%, an increment of 50, an initial test vector set size of 100 , and a ceiling of 1000 test vectors. We will also use the default value for -g option where swift’s system generator will be used for PRNG.  
 To run the simulations, invoke the following
 ```
 fault -v 100 -r 50 -m 95\
@@ -66,15 +64,15 @@ fault -v 100 -r 50 -m 95\
   Netlists/s27.cut.v\
   --clock CK --reset reset --bypassing VDD=1 --bypassing GND=0
 ```
-This will generate the coverage at the default path: Netlists/s27.tv.json
+This will generate the coverage at the default path: **Netlists/s27.tv.json**
 ### B) Using Quaigh or Atalanta
 I still have to test this option
 ## Scain Chain Insertion
 Chain performs scan chain insertion through the netlist’s internal flip-flops. It has the following options:  
-fault chain -l <liberty-file> -c <cell-models-file> -o <path-to-chained-netlist> <flattened-netlist-path> <bypass options>  
--l: specifies the path to the liberty file of the standard cell library.  
--c: cell models file to verify the scan chain integrity.  
--o: path of the chained netlist.
+`fault chain [-l <liberty-file-path>] [-c <cell-models-file-path>] [-o <chained-netlist-file-path>] <flattened-netlist-file-path> <bypass-options>`  
+-l: Specifies the path to the liberty file of the standard cell library.  
+-c: Cell models file to verify the scan chain integrity.  
+-o: Path to the chained netlist.
 
 The chained netlist could be generated by running
 ```
@@ -84,12 +82,12 @@ fault chain\
   Netlists/s27.nl.v\
   --clock CK --reset reset --bypassing VDD=1 --bypassing GND=0
 ```
-This will generate the chained netlist at the default path: Netlists/s27.chained.v
+This will generate the chained netlist at the default path: **Netlists/s27.chained.v**
 ## JTAG Interface Insertion
 In this part, we will add the JTAG port to the chained netlist. To run tap, we set the following options:  
-fault tap -l <liberty-file> -c <cell-models-file> -o <path-to-jtag-interface-inserted-netlist> <flattened-netlist-path> <bypass options>  
+`fault tap [-l <liberty-file-path>] [-c <cell-models-file-path>] [-o <JTAG-interface-inserted-netlist-file-path>] <flattened-netlist-file-path> <bypass-options>`  
 -l: Path to the liberty file for resynthesis.  
--c: Cell models file to verify JTAG port using given cell model.  
+-c: Cell models file to verify the JTAG port.  
 -o: Path to the output file. (Default: input + .jtag.v)
 
 To run the tap option, invoke the following
@@ -100,4 +98,4 @@ fault tap\
   Netlists/s27.chained.v\
   --clock CK --reset reset --bypassing VDD=1 --bypassing GND=0
 ```
-This will generate the jtag interface inserted netlist at the default path: Netlists/s27.jtag.v  
+This will generate the JTAG interface inserted netlist at the default path: **Netlists/s27.jtag.v**
